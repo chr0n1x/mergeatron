@@ -250,8 +250,9 @@ Jenkins.prototype.pushFound = function(push) {
  * 2. old_push.BEFORE should now be assigned to push.BEFORE
  * 3. trigger a new build with the new BEFORE & AFTER SHA range
  *
- * @method prunePreceedingPushBuilds
+ * @method amendProjectPipeline
  * @param url_opts {Object} Prepared by self.buildPush
+ * @return {Object}
  */
 Jenkins.prototype.amendProjectPipeline = function(url_opts) {
     var self = this,
