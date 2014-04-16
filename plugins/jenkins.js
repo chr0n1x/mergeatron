@@ -237,6 +237,43 @@ Jenkins.prototype.pushFound = function(push) {
 };
 
 /**
+ * Goes through the current list of BLOCKED Jenkins queue items and removes any that are of
+ *
+ * 1. the same project AND
+ * 2. the same ref / branch
+ * 3. have an AFTER parameter that is equal the BEFORE parameter of this push
+ *
+ * For #3, that means that the current push object supercedes the push object that triggered
+ * a build for the queued item, so the trigger parameters need to be updated. That is:
+ *
+ * 1. cancel old queue item
+ * 2. old_push.BEFORE should now be assigned to push.BEFORE
+ * 3. trigger a new build with the new BEFORE & AFTER SHA range
+ *
+ * @method prunePreceedingPushBuilds
+ * @param url_opts {Object} Prepared by self.buildPush
+ */
+Jenkins.prototype.amendProjectPipeline = function(url_opts) {
+    var self = this,
+        repo = push.repository.name,
+        project = self.config.push_projects[repo].project,
+        options = {
+        url: url.format({
+            protocol: this.config.protocol,
+            host: this.config.host,
+            pathname: '/queue/api/json'
+        }),
+        method: 'GET'
+    };
+
+    request(options, function(err, response) {
+
+    });
+
+    return url_opts;
+};
+
+/**
  * Build a given push command. Assumes that validatePush was run on push & runs a given project.
  *
  * @method buildPush
@@ -253,6 +290,8 @@ Jenkins.prototype.buildPush = function(push, branch) {
             BEFORE: push.before,
             AFTER: push.after,
         };
+
+    url_opts = self.amendProjectPipeline(url_opts);
 
     self.triggerBuild(self.config.push_projects[repo].project, url_opts, function(error) {
         if (error) {
